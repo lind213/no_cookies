@@ -8,9 +8,10 @@ import random
 import string
 from datetime import datetime
 
+# Create a Flask blueprint
 bp = Blueprint('moja', __name__)
 
-
+# Selects the correct database file depending on the platform
 if platform == "linux" or platform == "linux2":
     db_path = '<file_path>'
     tegn_liste = '<file_path>'
@@ -20,18 +21,21 @@ elif platform == "darwin":
     tegn_liste = '<file_path>'
     tegn_name = '<file_path>'
 
+# Creates a list of the sign names
 sign_names = [ ]
 with open(tegn_name, 'r') as csvfile:
     lineread = csv.reader(csvfile)
     for row in lineread:
         sign_names.append(row)
 
+# Creates a list of the signs
 filmene = [ ]
 with open(tegn_liste, 'r') as csvfile:
     linereader = csv.reader(csvfile)
     for row in linereader:
         filmene.append(row[0])
 
+#  Creates a list of the signs without the numbers
 film_n = [ ]
 for i in filmene:
     k = 1
@@ -42,15 +46,17 @@ for i in filmene:
         else:
             pass
 
+# Creates a list of the signs without file extensions
 filmene_clean = [ ]
 for i in filmene:
     cleannames = re.sub('\W+','', i)
     names = cleannames[:-3]
     filmene_clean.append(names)
 
+# creates names of columns for the database
 bkg_col = ['age', 'gender', 'hs', 'col', 'univ', 'other', 'lower', 'upper', 'middle', 'agets', 'region']
 
-
+# Function to get the id number of the last row in the database
 def get_id():
     con = sqlite3.connect(db_path)
     cur = con.cursor()
@@ -60,6 +66,7 @@ def get_id():
     con.close()
     return a
 
+# Function to add a new row to the database
 def check_id(ide):
     con = sqlite3.connect(db_path)
     cur = con.cursor()
@@ -69,6 +76,7 @@ def check_id(ide):
     results = results[0][0]
     return results
 
+# Function to get the long id from the database
 def longer_id():
     con = sqlite3.connect(db_path)
     cur = con.cursor()
@@ -80,6 +88,7 @@ def longer_id():
         make_list.append(i[0])
     return make_list
 
+# Function to insert responses  to the database
 def sql_update(the_film_list, ide, s_p, r_c):
     con = sqlite3.connect(db_path)
     secure_list = [ ]
@@ -140,7 +149,8 @@ def sql_update(the_film_list, ide, s_p, r_c):
     con.commit()
     con.close()
     return secure_list
-    
+
+# Function to insert page visited to the database
 def add_page(page, ide):
     con = sqlite3.connect(db_path)
     cur = con.cursor()
@@ -148,6 +158,7 @@ def add_page(page, ide):
     con.commit()
     con.close()
 
+# Function to get the correct page to display
 def get_pages(ide):
     the_results = [ ]
     con = sqlite3.connect(db_path)
@@ -188,6 +199,7 @@ def get_pages(ide):
     return_this = [i for i in remove_null if i!='no']
     return return_this
 
+# Function to remove last page visited to the database
 def remove_page(page, ide):
     con = sqlite3.connect(db_path)
     cur = con.cursor()
@@ -195,6 +207,7 @@ def remove_page(page, ide):
     con.commit()
     con.close()
 
+# Function to get the number of rows in the database
 def ip_rows(ip_num):
     con = sqlite3.connect(db_path)
     cur = con.cursor()
@@ -202,6 +215,7 @@ def ip_rows(ip_num):
     con.close()
     return row_num
 
+# Function to display the welcome page and register the long id
 @bp.route('/welcome')
 def start_her():
     get_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.remote_addr) 
@@ -223,7 +237,7 @@ def start_her():
 
         return render_template('tegn_temp/welcome.html', long_id = long_id)
 
-
+# Function to display the last page
 @bp.route('/end', methods = ['POST', 'GET'])
 def final():
     if request.method == 'POST':
@@ -257,7 +271,7 @@ def final():
         turn = 1
         return render_template('tegn_temp/survey2.html', message = message, ide = ide)
 
-
+# Function to display the multipage survey with films
 @bp.route('/tegnspm', methods = ['POST', 'GET'])
 def survey3():
     if request.method == 'POST':
@@ -372,7 +386,7 @@ def survey3():
         turn = 1
         return render_template('tegn_temp/survey2.html', message = message, ide = ide)
 
-
+# Function to display the background survey
 @bp.route('/tegnid2', methods = ['POST', 'GET'])
 def survey2():
     if request.method == 'POST':
